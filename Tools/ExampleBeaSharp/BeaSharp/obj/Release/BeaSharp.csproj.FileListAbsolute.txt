@@ -1,0 +1,7 @@
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\bin\Release\BeaSharp.exe
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\bin\Release\BeaSharp.pdb
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\bin\Release\Bea.dll
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\bin\Release\Bea.pdb
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\obj\Release\BeaSharp.csprojResolveAssemblyReference.cache
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\obj\Release\BeaSharp.exe
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\BeaSharp\obj\Release\BeaSharp.pdb

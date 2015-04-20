@@ -1,0 +1,6 @@
+LIBRARY test
+EXPORTS rang32
+EXPORTS xTG
+EXPORTS FAKA
+EXPORTS xVirtualAlloc
+EXPORTS xVirtualFree

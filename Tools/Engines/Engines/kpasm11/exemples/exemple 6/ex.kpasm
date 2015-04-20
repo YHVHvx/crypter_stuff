@@ -1,0 +1,107 @@
+
+
+mov_reg_cst(reg:registre,cst:entier)
+{
+
+16:
+  {
+    junk();
+    mov_reg_cst(reg,cst-[freemem0]);
+    add_reg_mem(reg,freemem0);
+  }
+16:
+  {
+    junk();
+    mov_reg_cst(reg,[freemem0]+cst);
+    sub_reg_mem(reg,freemem0);
+  }
+1: DEFAUT
+  {
+    write8(0xB8|reg);
+    write32(cst);
+  }
+}
+
+mov_mem_cst(adr:adresse,constante:entier)
+{
+ 1:DEFAUT
+ {
+    write16(0x05C7);
+    write32(adr);
+    write32(constante);
+ }
+}
+
+mov_reg_mem(reg:registre,adr:adresse)
+{
+1: DEFAUT
+ {
+  if(reg==EAX)
+  {
+    write8(0xA1);
+  }
+  else
+  {
+    write16(0x058B | reg <<11);
+  }
+  write32(adr);
+ }
+}
+
+add_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    write16(0xC003 | regdest<<11 | regsrc<<8);
+  }
+}
+
+add_reg_mem(reg:registre,adr:adresse)
+{
+16:
+  {
+    mov_reg_mem(freereg0,adr);
+    add_reg_reg(reg,freereg0);
+  }
+1: DEFAUT
+  {
+    write16(0x0503 | (reg << 11));
+    write32(adr);
+  }
+}
+
+
+sub_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    write16(0xC02B | regdest << 11 | regsrc << 8);
+  }
+}
+
+sub_reg_mem(reg:registre,adr:adresse)
+{
+16:
+ {
+    mov_reg_mem(freereg0,adr);
+    sub_reg_reg(reg,freereg0);
+  }
+1: DEFAUT
+  {
+    write16(0x052B | reg<<11);
+    write32(adr);
+  }
+}
+
+junk()
+{
+ 1:
+ {
+      mov_mem_cst(freemem1,rndint0);
+      MEM_CHANGED(freemem1,rndint0);
+ }
+ 0:DEFAUT
+ {
+     write8(0x90);
+ }
+ }

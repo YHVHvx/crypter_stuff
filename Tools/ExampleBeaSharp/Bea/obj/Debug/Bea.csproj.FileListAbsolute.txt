@@ -1,0 +1,5 @@
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\Bea\bin\Debug\Bea.dll
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\Bea\bin\Debug\Bea.pdb
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\Bea\obj\Debug\Bea.csprojResolveAssemblyReference.cache
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\Bea\obj\Debug\Bea.dll
+Z:\Sources\Malware\Crypter\Tools\ExampleBeaSharp\Bea\obj\Debug\Bea.pdb

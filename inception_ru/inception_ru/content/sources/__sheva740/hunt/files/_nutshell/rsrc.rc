@@ -1,0 +1,2 @@
+#define IDR_SERVICE     100
+IDR_SERVICE BIN DISCARDABLE "./nutshell_service/nutshell_service.exe"

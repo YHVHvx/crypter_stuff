@@ -1,0 +1,30 @@
+﻿Построение начато 19.09.2011 7:31:09.
+     1>Проект "E:\DOCS!!!\MyProg\FREELANCE\CURRENT\GeneratorExe\PELib_WORKED\PeLib\PeLib.vcxproj" в узле 2 (целевые объекты build).
+     1>InitializeBuildStatus:
+         Создание "Release\PeLib.unsuccessfulbuild", так как было задано "AlwaysCreate".
+       ClCompile:
+         Для всех выходных данных обновления не требуется.
+       Lib:
+         Для всех выходных данных обновления не требуется.
+         H:\Program Files\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"E:\DOCS!!!\MyProg\FREELANCE\CURRENT\GeneratorExe\PELib_WORKED\Release\PeLib.lib" /NOLOGO /MACHINE:X86 /SUBSYSTEM:WINDOWS /LTCG Release\BoundImportDirectory.obj
+         Release\InputBuffer.obj
+         Release\OutputBuffer.obj
+         Release\ComHeaderDirectory.obj
+         Release\DebugDirectory.obj
+         Release\ExportDirectory.obj
+         Release\IatDirectory.obj
+         Release\MzHeader.obj
+         Release\PeFile.obj
+         Release\PeHeader.obj
+         Release\PeLibAux.obj
+         Release\RelocationsDirectory.obj
+         Release\ResourceDirectory.obj
+         PeLib.vcxproj -> E:\DOCS!!!\MyProg\FREELANCE\CURRENT\GeneratorExe\PELib_WORKED\Release\PeLib.lib
+       FinalizeBuildStatus:
+         Файл "Release\PeLib.unsuccessfulbuild" удаляется.
+         Обращение к "Release\PeLib.lastbuildstate".
+     1>Построение проекта "E:\DOCS!!!\MyProg\FREELANCE\CURRENT\GeneratorExe\PELib_WORKED\PeLib\PeLib.vcxproj" завершено (целевые объекты build).
+
+Построение успешно завершено.
+
+Затраченное время: 00:00:00.87

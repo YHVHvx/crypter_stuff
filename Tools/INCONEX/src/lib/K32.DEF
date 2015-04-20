@@ -1,0 +1,10 @@
+LIBRARY KERNEL32
+EXPORTS
+    VxDCall0@0              @1
+    VxDCall1@8              @2
+    VxDCall2@12             @3
+    VxDCall3@16             @4
+    VxDCall4@20             @5
+    VxDCall5@24             @6
+    VxDCall6@28             @7
+    VxDCall7@32             @8

@@ -1,0 +1,3 @@
+PE Loader v1.2
+Exe : C:\bin\XR_3DA.exe
+ModuleFileName: c:\Projects\peldr\Release\peldr.exe

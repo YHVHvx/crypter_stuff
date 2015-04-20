@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<title> Сила в простоте </title>
+	</head>
+
+	<body>
+	<table cellpadding="25" align="center" >
+			<tr>
+				<td>
+					<h2><span class="header">Сила в простоте</span></h2>
+					<br>
+					<p class="text">Поговорим немного о приватности? Как часто тебе нужно передать какую-то важную цифровую информацию так, 
+					что бы быть уверенным, что никто ее не прочитает? В связи с наличием таких программ, как <span class="warning">Эшелон и PRISM</span>, 
+					это становится особенно актуально.</p> 
+					<p class="text">Современный мир настойчиво диктует нам, что чем сложнее алгоритм, тем он лучше, но это не всегда так. 
+					Сегодня я попробую это доказать. Поможет мне в этом относительно малоизвестный криптографический алгоритм, 
+					применяемый на практике в основном шпионами и правительствами для передачи секретных данных. </p><br>
+					
+					<h3><span class="warning">Теория</span></h3>
+					<p class="text">Итак, немного теории:<br><br>
+					<span class="warning">Открытый текст</span> -- исходное сообщение, которое нужно зашифровать.<br>
+					<span class="warning">Ключ</span> -- секретная информация, используемая для перевода открытого текста в шифротекст и зачастую обратно.<br>
+					<span class="warning">Шифротекст</span> -- зашифрованное сообщение, которое можно без опаски передавать по открытым каналам связи.</p>
+					<p class="text">Говорить мы будем об одном из самых простых, но, в то же время, и об одном из самых стойких алгоритмов -- 
+					<span class="warning">шифре Вернама</span>:</p>
+					<p class="warning">&#34;Шифр Вернама (другое название: англ. One-time pad — схема одноразовых блокнотов) — в криптографии система 
+					симметричного шифрования, изобретённая в 1917 году сотрудниками AT&#38;T Мейджором Джозефом Моборном и Гилбертом Вернамом. 
+					Шифр Вернама является системой шифрования, для которой доказана абсолютная криптографическая стойкость.<br>
+					Для произведения шифротекста открытый текст объединяется операцией «исключающее ИЛИ» с ключом 
+					(называемым одноразовым блокнотом или шифроблокнотом). 
+					При этом ключ должен обладать тремя критически важными свойствами:</p>
+					<ul>
+					<li><span class="warning">быть истинно случайным;</span></li>
+					<li><span class="warning">совпадать по размеру с заданным открытым текстом;</span></li>
+					<li><span class="warning">применяться только один раз.&#34;</span></li>
+					</ul>
+					<p class="warning">Википедия</p><br>
+
+					<p class="text">Для читателя, наверно, не секрет, что все, хранимое и обрабатываемое компьютером можно представить в виде чисел 
+					(т.к. компьютер, в переводе а английского -- тот, кто считает, предназначен преимущественно для математических расчетов) 
+					в двоичной системе счисления:</p>
+					<ul>
+					<li>1 как 1<sub>2</sub></li>
+					<li>2 как 10<sub>2</sub></li>
+					<li>3 как 11<sub>2</sub></li>
+					<li>2013 как 11111011101<sub>2</sub></li>
+					<li>строку "text" как 01110100011001010111100001110100<sub>2</sub></li>
+					</ul>
+
+					<p class="text">А теперь погорим о т.н. операции <span class="warning">«исключающее ИЛИ»</span>. Проще всего описать ее с помощью небольшой таблицы, где по 
+					горизонтали будут отложены биты сообщения, а по вертикали -- ключа.</p>
+					<p class="pic1"><img src="pic/pis_t1.png" alt="Table 1"></p>
+					<p class="text">Таким образом, при применении Исключающего ИЛИ к открытому тексту 
+					10011101<sub>2</sub> и ключу 10110111<sub>2</sub> получим шифротекст 00101010<sub>2</sub>. 
+					Что бы расшифровать полученный шифротекст, применим к нему еще раз операцию исключающее ИЛИ и получим 
+					10011101<sub>2</sub>, т.е. наш открытый текст. </p>
+					<p class="text">Как видишь, идеи, заложенные в шифр Вернама, достаточно простые, реализовать их почти на любом современном 
+					ЯП можно за пару минут. Однако, возникает вопрос получения абсолютно случайного ключа и его передачи второй стороне. 
+					Но если отказаться от абсолютной случайности, все становится предельно просто, особенно в век социальных сетей:</p>
+					<ul>
+					<li>1. выбираем случайную фотографию (в целом, нам подойдет абсолютно любой файл, просто сложилось так, что скачать фотографию с 
+					соц. сети заметно проще, чем, например, музыку или видео) у себя или друзей (желательно, что бы ее можно было легко отличить от 
+					других, но это исключительно для удобства) и используем в качестве ключа;</li>
+					<li>2. при личной встрече сообщаем второй стороне выбранный ключ (описывая или сообщив адрес);</li>
+					<li>3. шифруем с помощью этого ключа и передаем через открытый канал второй стороне секретные данные;</li>
+					<li>4. вторая сторона их расшифровывает;</li>
+					<li>5. при следующей необходимости переходим к первому пункту;</li>
+					</ul>
+					<p class="text">Но не лишен такой подход и слабых сторон: ключевой недостаток шифра Вернама заключается в том, что длина ключа должна 
+					быть больше либо равна длине открытого текста, это некритично для небольших txt файлов, но даже маленький, 
+					но форматированный документ передать будет не так то уж и просто. </p>
+					<p class="text">Но есть решение и этой  проблемы: использование нескольких ключей взаимно простой длины 
+					(т.е. их длины не должны иметь общих делителей, кроме 1, разумеется). Т.е. при использовании двух ключей 
+					(длинами 2048 и 2047 байт) у нас два варианта: добавить в конец первого второй ключ 
+					(а значит мы сможем зашифровать уже 4095 байт) либо сложить их с помощью все того же исключающего ИЛИ в ключ длинной 4192256 байт 
+					(что, согласитесь, неплохо, если эти ключи будут по примерно 25 кб, что примерно равно половине-четвертине обычной фотографии, 
+					мы получим ключ длинной в 655334400 байт, что позволит зашифровать документ размером чуть более 600 мб).</p> 
+					<p class="text">Итак, как же можно сложить два ключа с помощью исключающего ИЛИ? Рассмотрим это на примере двух ключей по 3 и 4 бита: 
+					101<sub>2</sub> и 1001<sub>2</sub>. Представим их как две "бесконечные"(по сути, закольцованные) ленты и будем постепенно прокручивать их и складывать с 
+					помощью исключающего ИЛИ в конечный ключ.</p>
+					<p class="pic1"><img src="pic/pis_t2.png" alt="KEY1 XOR KEY2"></p>
+					<p class="text">Как видишь, мы с помощью двух ключей динами n=3 и m=4 сгенерировали ключ длинной nm=12 битов. А теперь перейдем к практике.</p><br>
+					
+					<h3><span class="warning">Практика</span></h3>
+					<p class="text">Писать я буду на питоне, т.к. это очень простой и выразительный язык, что бы читать программы на нем совсем не обязательно его знать. </p>
+					<p class="text">Итак, сначала нам понадобится т.н. лента:</p>
+					
+					
+					
+<pre class="python" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #ff7700;font-weight:bold;">def</span> <span style="color: #dc143c;">string</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span>:
+    n=<span style="color: #ff4500;">0</span>
+    <span style="color: #ff7700;font-weight:bold;">while</span> <span style="color: #008000;">True</span>:
+        <span style="color: #ff7700;font-weight:bold;">yield</span> data<span style="color: black;">&#91;</span>n<span style="color: black;">&#93;</span>
+        n+=<span style="color: #ff4500;">1</span>
+        n<span style="color: #66cc66;">%</span>=<span style="color: #008000;">len</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span></pre>
+		
+		
+		
+					<p class="text">Ее задача предельно проста: при каждом запросе возвращать следующий элемент последовательности data, 
+					как только последовательность заканчивается -- происходит переход в начало и так до бесконечности.</p>
+					<p class="text">Что ж, теперь нам нужно превратить произвольный файл в две (можно и больше, но неизвестно, как это отразится на надежности) ленты и 
+					получить новую ленту нужной длины.</p>
+					
+					
+					
+<pre class="python" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #ff7700;font-weight:bold;">def</span> genKey<span style="color: black;">&#40;</span>data,l<span style="color: black;">&#41;</span>:
+    s1, s2= <span style="color: #008000;">None</span>, <span style="color: #008000;">None</span>
+    <span style="color: #ff7700;font-weight:bold;">if</span> <span style="color: #008000;">len</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span><span style="color: #66cc66;">%</span>2==<span style="color: #ff4500;">0</span>:
+        data.<span style="color: black;">pop</span><span style="color: black;">&#40;</span><span style="color: #ff4500;">0</span><span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#выбрасываем первый символ, нам нужна нечетная длина</span>
+        <span style="color: #808080; font-style: italic;">#обычно это часть сигнатуры типа, одинаковой для всех файлов,</span>
+        <span style="color: #808080; font-style: italic;">#так что она нам только мешает</span>
+    m=<span style="color: #008000;">int</span><span style="color: black;">&#40;</span><span style="color: #008000;">len</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span>/<span style="color: #ff4500;">2</span><span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#середина нашего списка</span>
+    t1=<span style="color: black;">&#40;</span>data<span style="color: black;">&#91;</span>:m<span style="color: black;">&#93;</span><span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#в первую ленту пойдет все до нее </span>
+    t2=<span style="color: black;">&#40;</span>data<span style="color: black;">&#91;</span>m:<span style="color: black;">&#93;</span><span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#а во второю -- все остальное</span>
+&nbsp;
+    <span style="color: #ff7700;font-weight:bold;">if</span> <span style="color: #008000;">len</span><span style="color: black;">&#40;</span>t1<span style="color: black;">&#41;</span><span style="color: #66cc66;">*</span><span style="color: #008000;">len</span><span style="color: black;">&#40;</span>t2<span style="color: black;">&#41;</span><span style="color: #66cc66;">&lt;</span>l:
+        <span style="color: #ff7700;font-weight:bold;">raise</span> <span style="color: #008000;">Exception</span><span style="color: black;">&#40;</span><span style="color: #483d8b;">&quot;Too small data to generate key&quot;</span><span style="color: black;">&#41;</span>
+&nbsp;
+    s1=<span style="color: #dc143c;">string</span><span style="color: black;">&#40;</span>t1<span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#создаем наши ленты</span>
+    s2=<span style="color: #dc143c;">string</span><span style="color: black;">&#40;</span>t2<span style="color: black;">&#41;</span> <span style="color: #808080; font-style: italic;">#</span>
+&nbsp;
+    out=<span style="color: black;">&#91;</span><span style="color: black;">&#93;</span> <span style="color: #808080; font-style: italic;">#пустой список</span>
+    <span style="color: #ff7700;font-weight:bold;">for</span> i <span style="color: #ff7700;font-weight:bold;">in</span> <span style="color: #008000;">range</span><span style="color: black;">&#40;</span>l<span style="color: black;">&#41;</span>: <span style="color: #808080; font-style: italic;">#цикл от 0 до l-1</span>
+        out+=<span style="color: black;">&#91;</span>next<span style="color: black;">&#40;</span>s1<span style="color: black;">&#41;</span>^next<span style="color: black;">&#40;</span>s2<span style="color: black;">&#41;</span><span style="color: black;">&#93;</span> <span style="color: #808080; font-style: italic;">#формируем массив, ^ обозначает исключающее ИЛИ</span>
+&nbsp;
+    <span style="color: #ff7700;font-weight:bold;">return</span> out</pre>
+	
+	
+	
+	
+					<p class="text">Что бы убедиться в правильности запустим функцию таким образом:</p>
+					
+<PRE>
+genKey([1,0,1,1,0,0,1],12) => [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0]
+</PRE>
+
+					<p class="text">После знака =&#62; находится ее вывод, который совпадает с значениями в моей последней таблице, просчитанной вручную. 
+					Значит функция работает правильно. Попробуем запросить ключ больше, чем это возможно:</p>
+					
+					
+					
+<pre class="python" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #66cc66;">&gt;&gt;&gt;</span> genKey<span style="color: black;">&#40;</span><span style="color: black;">&#91;</span><span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">1</span><span style="color: black;">&#93;</span>,<span style="color: #ff4500;">13</span><span style="color: black;">&#41;</span>
+Traceback <span style="color: black;">&#40;</span>most recent call last<span style="color: black;">&#41;</span>:
+  File <span style="color: #483d8b;">&quot;&lt;pyshell#5&gt;&quot;</span>, line <span style="color: #ff4500;">1</span>, <span style="color: #ff7700;font-weight:bold;">in</span> <span style="color: #66cc66;">&lt;</span>module<span style="color: #66cc66;">&gt;</span>
+    genKey<span style="color: black;">&#40;</span><span style="color: black;">&#91;</span><span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">1</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">0</span>,<span style="color: #ff4500;">1</span><span style="color: black;">&#93;</span>,<span style="color: #ff4500;">13</span><span style="color: black;">&#41;</span>
+  File <span style="color: #483d8b;">&quot;[цензура] vernam.py&quot;</span>, line <span style="color: #ff4500;">19</span>, <span style="color: #ff7700;font-weight:bold;">in</span> genKey
+    <span style="color: #ff7700;font-weight:bold;">raise</span> <span style="color: #008000;">Exception</span><span style="color: black;">&#40;</span><span style="color: #483d8b;">&quot;Too small data to generate key&quot;</span><span style="color: black;">&#41;</span>
+<span style="color: #008000;">Exception</span>: Too small data to generate key</pre>
+
+
+
+					<p class="text">И получим сообщение об ошибке, работает.</p>
+					<p class="text">Осталось только научиться шифровать файлы. В этом нам поможет следующая функция:</p>
+					
+					
+					
+<pre class="python" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #ff7700;font-weight:bold;">def</span> <span style="color: #dc143c;">crypt</span><span style="color: black;">&#40;</span>datafile, keyfile<span style="color: black;">&#41;</span>:
+    data=<span style="color: #008000;">open</span><span style="color: black;">&#40;</span>datafile,<span style="color: #483d8b;">&quot;rb&quot;</span><span style="color: black;">&#41;</span>.<span style="color: black;">read</span><span style="color: black;">&#40;</span><span style="color: black;">&#41;</span>
+    key=<span style="color: #008000;">open</span><span style="color: black;">&#40;</span>keyfile,<span style="color: #483d8b;">&quot;rb&quot;</span><span style="color: black;">&#41;</span>.<span style="color: black;">read</span><span style="color: black;">&#40;</span><span style="color: black;">&#41;</span>
+&nbsp;
+    gamma=<span style="color: #008000;">None</span>
+    <span style="color: #ff7700;font-weight:bold;">try</span>:
+        gamma=genKey<span style="color: black;">&#40;</span>key,<span style="color: #008000;">len</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span><span style="color: black;">&#41;</span>
+    <span style="color: #ff7700;font-weight:bold;">except</span>:
+        <span style="color: #ff7700;font-weight:bold;">print</span><span style="color: black;">&#40;</span><span style="color: #483d8b;">&quot;Ключевой файл слишком короткий для шифрования исходного файла.&quot;</span><span style="color: black;">&#41;</span>
+        <span style="color: #ff7700;font-weight:bold;">return</span>
+&nbsp;
+    out=<span style="color: black;">&#91;</span>data<span style="color: black;">&#91;</span>i<span style="color: black;">&#93;</span>^gamma<span style="color: black;">&#91;</span>i<span style="color: black;">&#93;</span> <span style="color: #ff7700;font-weight:bold;">for</span> i <span style="color: #ff7700;font-weight:bold;">in</span> <span style="color: #008000;">range</span><span style="color: black;">&#40;</span><span style="color: #008000;">len</span><span style="color: black;">&#40;</span>data<span style="color: black;">&#41;</span><span style="color: black;">&#41;</span><span style="color: black;">&#93;</span>
+    <span style="color: #ff7700;font-weight:bold;">with</span> <span style="color: #008000;">open</span><span style="color: black;">&#40;</span>datafile,<span style="color: #483d8b;">&quot;wb&quot;</span><span style="color: black;">&#41;</span> <span style="color: #ff7700;font-weight:bold;">as</span> f:
+        f.<span style="color: black;">write</span><span style="color: black;">&#40;</span><span style="color: #dc143c;">bytes</span><span style="color: black;">&#40;</span>out<span style="color: black;">&#41;</span><span style="color: black;">&#41;</span></pre>
+		
+		
+		
+					<p class="text">С целью ее проверки был успешно зашифрован и расшифрован текст данной статьи (разумеется, копия), ключем выступал исходник нашего шифратора. </p>
+					<br>
+					
+					<h3><span class="warning">В заключение</span></h3>
+					<p class="text">Как видишь, простой не значит слабый. Шифр Вернама уверенно укоренился в областях, требующих сверхсекретности, 
+					так почему бы и нам не воспользоваться опытом шпионов?</p><br>
+					
+					<p class="warning">Исходники: <a href="sources/FanOfGun/powerins" target="_blank">sources/FanOfGun/powerins</a></p>
+
+<p class="warning"><br>______________________________<br>
+FanOfGun<br> 
+2013<br><br>
+Inception E-Zine</p>
+
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

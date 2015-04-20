@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<title> Большое чудо в маленьком офисе. Часть 3 </title>
+	</head>
+
+	<body>
+	<table cellpadding="25" align="center" >
+			<tr>
+				<td>
+					<h2><span class="header">Большое чудо в маленьком офисе. Часть 3</span></h2>
+					<br>
+					
+					<p class="text"><img src="pic/mir_pic28.png" alt="__sheva740 prototype 2 =)" class="rightpic1">
+					Хочется поприветствовать тех, кто выстоял, ведь этот туториал ,кажется, может утомить ))).</p>
+					
+					<p class="text">Мы помним, как в прошлом шаге не рекомендовалось запускать программу.<br>
+					В этом шаге мы устраним это недоразумение. </p>
+					<p class="text">Дело в том, что программа, которая рассматривалась в прошлом шаге, двумя потоками генерировала неверное соответствие 
+					<span class="warning">IPA – MAC(IPAttack) и IPB – MAC(IPAttack)</span> у атакуемых машин. </p>
+					<p class="text">Так вот, если мы просто остановим эти потоки и не исправим ложное соответствие на истинное 
+					<span class="warning">IPA – MAC(IPA) и IPB – MAC(IPB)</span>, то атакованным машинам придется ждать обновлений в своих 
+					локальных arp-таблицах какое-то время, или попросту ждать своей перезагрузки. </p>
+					<p class="text">Но мы хотим все провести программно и грамотно.</p>
+					<p class="text">Для корректировки данных, испорченных предшествующими потоками, мы запустим те же потоки снова, 
+					но новые потоки будут подавать обеим машинам истинные IP-MAC соответствия. </p>
+					<p class="pic1"><img src="pic/mir_pic29.png" alt="Thread A"></p>
+					<p class="pic1"><img src="pic/mir_pic30.png" alt="Thread B"></p>
+					
+					
+					<p class="text">Вот как раз этим мы и займемся в рамках функции <span class="warning">ResetSpoof()</span>. 
+					Мы запустили два новых потока с истинными данными. 
+					Причем мы даем 5-10 секунд на то, чтобы потоки поработали и "убедили"  атакованные машины сменить данные в локальных arp – таблицах. 
+					Далее просто останавливаем эти потоки и освобождаем память. Все, программу можно спокойно закрывать. <br>
+					Остается один вопрос – как отловить признак завершения программы пользователем в консольном приложении? 
+					Этот вопрос успешно решается функцией <span class="warning">SetConsoleCtrlHandler(). </span>
+					Простой пример использования этой полезной функции вы найдете по пути:<br>
+					<a href="sources/__sheva740/miracle/03/files/setConHandl/setConHandl.asm" target="_blank">
+					"sources/__sheva740/miracle/03/files/setConHandl/setConHandl.asm"</a></p>
+					
+					<p class="text">Поэкспериментируйте с ней, запустите и наберите Ctrl+С. Через несколько секунд процесс завершится и все станет понятней.</p>
+					
+					<p class="text">Итак, у нас по пути: <br>
+					<a href="sources/__sheva740/miracle/03/files/arpspoof_sub2/src/arpspoof_sub2.asm" target="_blank">
+					"sources/__sheva740/miracle/03/files/arpspoof_sub2/src/arpspoof_sub2.asm"</a><br>
+					… программа, которую можно безопасно запустить. 
+					Результатом ее работы будет обрыв сетевого обмена атакованной машины (IPA) с шлюзом (IPB). 
+					Причем программа корректно завершается, восстанавливая после себя все соответствия на атакованных хостах.</p>
+					
+					<p class="text">Если помните второй шаг, то там мы наметили себе еще задачу перехвата трафика с IPA к IPB. Как реализовать эту задачу? 
+					Сделать это можно средствами WinPcap. В ее недрах есть функция <span class="warning">pcap_loop()</span><br>
+					Что это за функция? 
+					Открыв интерфейс по <span class="warning">pcap_open_live()</span> и получив его хендл, передаем его <span class="warning">pcap_loop(). </span>
+					Эта функция будет получать указатель на все заголовки получаемых/передаваемых пакетов с/на этот интерфейс. 
+					Так, уже проще. )))<br>
+					Посмотрим на ее заголовок:<br>
+					<span class="warning">pcap_loop(adhandle, 0, offset packet_handler, NULL)</span><br>
+					где<br>
+					<span class="warning">adhandle</span> – указанный выше хендл открытого интерфейса<br>
+					<span class="warning">offset packet_handler</span> – адрес callback функции, которая должна так же быть организованна правильно.<br><br>
+					Приведем выдержку из справки:<br>
+					<span class="warning">void packet_handler (u_char *user, struct pcap_pkthdr *phrd, u_char *pdata)</span><br>
+					где<br>
+					<span class="warning">user</span> 	- Пользовательский параметр, который передается в <span class="warning">pcap_dispatch</span> подпрограмму. <br>
+					<span class="warning">phdr</span>	- является указателем на <span class="warning">pcap_pkthdr структуру</span>, которая предшествует каждому пакету. <br>
+					<span class="warning">pdata</span>	- указывает на данные пакета. Это позволяет пользователям определять собственную обработку фильтрованных пакетов.</p>
+					
+					<p class="text">Так и сделаем. 
+					В рамках функции packet_handler()  вызываем функцию  <span class="warning">ForwardPacket()</span>  и уже в рамках которой будем получать тело пакетов 
+					(указатель pktdata) и анализировать его. <br>
+					Вот наступил долгожданный момент, и мы получили пакет. Пакет прошел длинный путь <br>
+					<span class="warning">pcap_loop() – packet_handler() – ForwardPacket().</span> 
+					В рамках последней функции мы получили указатель на заголовок и тело пакета. 
+					Давайте теперь откроем исходник функции ForwardPacket() и вместе проследим по нему. 
+					Получаем заголовок tcp - пакета, и берем из него IP-отправителя, и IP-назначения. </p>
+					
+					<p class="text">Начинаем отлавливать и обрабатывать поток <span class="warning">IPA-IPB.</span></p>
+					
+					<p class="pic1"><img src="pic/mir_pic31.png" alt="IPA-IPB"></p>
+					
+					
+					<p class="text">Изменив заголовок пакета, отправляем его снова в сеть.<br><br>
+					Начинаем отлавливать и обрабатывать поток <span class="warning">IPB-IPA.</span></p>
+					
+					<p class="pic1"><img src="pic/mir_pic32.png" alt="IPB-IPA"></p>
+					
+					<p class="text">Изменив заголовок пакета, отправляем его снова в сеть</p>	
+					
+					<p class="text">Кажется понятно? <br>
+					-  если я получил пакет от IPA, я изменяю его так чтобы он пошел к IPB.<br>
+					-  если я получил пакет от IPB, я изменяю его так чтобы он пошел к IPA.</p>
+					
+					<p class="text">Кстати, в этом месте программы можно дополнить функцию <span class="warning">ForwardPacket()</span> более 
+					сложной обработкой или, прости Господи – подменой, данных в пакете, тут очень удобно будет с ним работать.</p>
+					
+					<p class="pic1"><img src="pic/mir_pic33.png" alt="__sheva740 prototype 3 =)"></p>
+					
+					<p class="text">Подведем итоги. Полностью работающая программа лежит по пути: <br>
+					<a href="sources/__sheva740/miracle/03/files/arpspoof/src/arpspoof.asm" target="_blank">
+					"sources/__sheva740/miracle/03/files/arpspoof/src/arpspoof.asm"</a></p>
+					
+
+					<p class="text">Также в папке <span class="warning">files</span> вы найдете простую программку по обнаружению атаки этого типа. 
+					Эта консольная программа покажет, какие машины в сети меняли свои MAC адреса. Далее , если вы поняли, 
+					где меняются адреса, нужно сесть за одну из них и позапускать 
+					сниффер для определения хоста который ей шлет ARP-пакеты с ложными MAC-адресами. Вот та, которая шлет, та и есть "преступник". ))<br><br>
+					Программу монитора смены MAC – ов можно найти тут:<br>
+					<a href="sources/__sheva740/miracle/03/files/macmon" target="_blank">
+					"sources/__sheva740/miracle/03/files/macmon/macmon.exe"</a><br>
+					Просто запускаем и ждем сообщений.</p>
+					
+					<p class="text"><img src="pic/mir_pic34.png" alt="__sheva740 prototype 4 =)" class="rightpic1">
+					Проект не был сложным. <br><br>
+					Нам удалось детально во всем разобраться, порисовать алгоритмы и уловить закономерности. <br><br>
+					Так же мы смогли привести промежуточные результаты проектирования. <br><br>
+					Были разработаны вспомогательные утилиты. <br><br>
+					В общем, было увлекательно. <br><br>
+					Но всему под солнцем должен придти конец, для того чтобы уступить место еще более лучшему. ))) <br><br>
+					Так что – До свиданья друзья! </p> <br>
+					
+					
+					<p class="warning"><a href="mircle_2.html"><<< Часть 2</a></p><br> 
+					
+
+					
+					<p class="warning">Исходники: <a href="sources/__sheva740/miracle/03/files" target="_blank">sources/__sheva740/miracle/03/files</a></p>
+
+<p class="warning"><br>______________________________<br>
+__sheva740<br> 
+2012<br><br>
+Inception E-Zine</p>
+
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

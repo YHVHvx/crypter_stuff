@@ -1,0 +1,29 @@
+﻿Построение начато 19.09.2011 3:41:52.
+     1>Проект "C:\Documents and Settings\Администратор\Рабочий стол\Sintetic\PeLib\PeLib.vcxproj" в узле 2 (целевые объекты build).
+     1>InitializeBuildStatus:
+         Обращение к "Release\PeLib.unsuccessfulbuild".
+       ClCompile:
+         Для всех выходных данных обновления не требуется.
+       Lib:
+         H:\Program Files\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Documents and Settings\Администратор\Рабочий стол\Sintetic\Release\PeLib.lib" /NOLOGO /LTCG Release\BoundImportDirectory.obj
+         Release\InputBuffer.obj
+         Release\OutputBuffer.obj
+         Release\ComHeaderDirectory.obj
+         Release\DebugDirectory.obj
+         Release\ExportDirectory.obj
+         Release\IatDirectory.obj
+         Release\MzHeader.obj
+         Release\PeFile.obj
+         Release\PeHeader.obj
+         Release\PeLibAux.obj
+         Release\RelocationsDirectory.obj
+         Release\ResourceDirectory.obj
+         PeLib.vcxproj -> C:\Documents and Settings\Администратор\Рабочий стол\Sintetic\Release\PeLib.lib
+       FinalizeBuildStatus:
+         Файл "Release\PeLib.unsuccessfulbuild" удаляется.
+         Обращение к "Release\PeLib.lastbuildstate".
+     1>Построение проекта "C:\Documents and Settings\Администратор\Рабочий стол\Sintetic\PeLib\PeLib.vcxproj" завершено (целевые объекты build).
+
+Построение успешно завершено.
+
+Затраченное время: 00:00:00.87

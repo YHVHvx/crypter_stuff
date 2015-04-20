@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<title> Большое чудо в маленьком офисе. Часть 2 </title>
+	</head>
+
+	<body>
+	<table cellpadding="25" align="center" >
+			<tr>
+				<td>
+					<h2><span class="header">Большое чудо в маленьком офисе. Часть 2</span></h2>
+					<br>
+					<ul>
+					<li><span class="warning">Функция   Start (). </span></li>
+					<li><span class="warning">Функция   InitSpoof ().  </span></li>
+					<li><span class="warning">Функция   StartARPSpoof ().</span></li>
+					</ul>
+					<p class="text">Давайте, для пользы дела, разобьем нашу задачу на две подзадачи:</p> 
+					<ul>
+					<li>попробуем вообще прекратить сетевой обмен между машинами <span class="warning">IPA и  IPB.</span></li>
+					<li>отловим трафик между  <span class="warning">IPA и  IPB</span> и попытаемся притормозить сетевой обмен:</li>
+					</ul>
+					<p class="pic1"><img src="pic/mir_pic10.png" alt="IPA and IPB"></p>
+					<p class="text">До начала эксперимента, пересядем на машину IPA и пустим пинг на IPB с параметром <span class="warning">"-t"</span>, т.е. в цикле. <br>
+					В этом шаге мы попытаемся решить первую из поставленных задач (прекратить сетевой обмен). 
+					В следующем шаге решим вторую задачу – отловить и притормозить трафик.</p>
+					
+					<p class="text">Исходник готового решения лежит по пути: 
+					<a href="sources/__sheva740/miracle/02/files/arpspoof_sub1/src/arpspoof_sub1.asm" target="_blank">
+					"sources/__sheva740/miracle/02/files/arpspoof_sub1/src/arpspoof_sub1.asm"</a></p>
+					
+					<p class="text">Давайте откроем для начала  <span class="warning">arpspoof_sub1.asm</span> и пройдемся по основным функциям, в нем содержащимся. 
+					Облегчит задачу незамысловатый алгоритм: </p>
+					
+					<p class="pic1"><img src="pic/mir_pic11.png" alt="Graphic Algoritm"></p><br>
+					
+					<h3><span class="warning">Функция   Start ().   </span></h3>
+					<p class="text">Итак, перед нами разбор ком. строки. Вы легко отметите то, что если запустить программу без параметров, 
+					то выпадет сообщение об ошибке параметра <span class="warning">"–i".</span> </p>
+					<p class="text">Параметр <span class="warning">"–i"</span>   (от слова "interface" )) ) – выведет нумерованный список идентификаторов сетевых интерфейсов, 
+					установленных в системе:</p>
+					
+					<p class="pic1"><img src="pic/mir_pic12.png" alt="arpspoof_sub1.exe -i"></p>
+					
+					<p class="text">Для получения справки к использованию программы предусмотрен параметр <span class="warning">"–h"</span>:</p>
+					
+					<p class="pic1"><img src="pic/mir_pic13.png" alt="arpspoof_sub1.exe -i"></p>
+					
+					
+					<p class="text">Вот добрались к параметру <span class="warning">"–s"</span>. За ним должны следовать два IP-адреса, 
+					обозначим их <span class="warning">IPA</span> и <span class="warning">IPB</span>, причем<br>
+					<span class="warning">IPA</span> –   адрес "Отправителя" пакетов;<br>
+					<span class="warning">IPB </span>–   адрес "Получателя".</p>
+					
+					<p class="text">Далее <span class="warning">ВНИМАНИЕ!!!</span> Пока не стоит запускать прогу с этим ключом. Вообще говоря, ничего страшного не произойдет, 
+					возможно, просто придется перезагрузиться для того, чтобы очистить локальную arp – таблицу, и всего-то. 
+					Так что пока просто проследите за изложением и скриншотами. </p>
+					
+<PRE>
+c:\...\files\arpspoof_sub1\src>arpspoof_sub1.exe -i 1 -s 192.168.1.2 192.168.1.3 
+</PRE>					
+					
+					<p class="text">При запуске вы же держите перед глазами распечатку, произойдет разбор командной строки. 
+					Заполнится частично структура <span class="warning">APRSPOOF &#8249; &#8250;</span>. Далее запустится инициализация программы, а именно процедура 
+					<span class="warning">InitSpoof ().</span></p><br>
+					
+					<h3><span class="warning">Функция   InitSpoof ().   </span></h3>
+					<p class="text">Целью этой функции будет полное заполнение структуры <span class="warning">APRSPOOF &#8249; &#8250;</span> и 
+					дальнейший запуск функции <span class="warning">StaticARP()</span> дважды. </p>
+					
+					<p class="text">Для начала распишем назначения полей структуры <span class="warning">APRSPOOF &#8249; &#8250;</span></p>
+					
+
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;">ARPSPOOF	<span style="color: #000000; font-weight: bold;">struct</span> 
+ucSelfMAC		<span style="color: #666666; font-style: italic;">;мой локальный МАС</span>
+	szTarget	<span style="color: #666666; font-style: italic;">;IP машины приемника</span>
+	ucTargetMAC	<span style="color: #666666; font-style: italic;">;MAC целевой машины</span>
+	szIP		<span style="color: #666666; font-style: italic;">;IP машины источника</span>
+	ucIPMAC		<span style="color: #666666; font-style: italic;">;MAC машины источника	</span>
+	szSelfIP	<span style="color: #666666; font-style: italic;">;мой локальный IP</span>
+	ucPretendMAC	<span style="color: #666666; font-style: italic;">;новый, подменяемый MAC 	</span>
+	hInterface	<span style="color: #666666; font-style: italic;">;указатель на открытый сетевой интерфейс</span>
+ARPSPOOF	<span style="color: #000000; font-weight: bold;">ends</span></pre>
+
+
+
+
+					<p class="text">Теперь заполним ее поля.</p> 
+					
+					
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;">ARPSPOOF	<span style="color: #000000; font-weight: bold;">struct</span> 
+ucSelfMAC		<span style="color: #666666; font-style: italic;">;GetLocalMAC()</span>
+	szTarget	<span style="color: #666666; font-style: italic;">;IPB</span>
+	ucTargetMAC	<span style="color: #666666; font-style: italic;">;GetMAC(IPB) ;SendingARP(IPB)</span>
+	szIP		<span style="color: #666666; font-style: italic;">;IPA</span>
+	ucIPMAC		<span style="color: #666666; font-style: italic;">;GetMAC(IPA) ;SendingARP(IPA)	</span>
+	szSelfIP	<span style="color: #666666; font-style: italic;">;GetLocalIP()</span>
+	ucPretendMAC	<span style="color: #666666; font-style: italic;">;GetLocalMAC()	</span>
+	hInterface	<span style="color: #666666; font-style: italic;">;pcap_open_live()</span>
+ARPSPOOF	<span style="color: #000000; font-weight: bold;">ends</span></pre>
+
+
+
+
+					<p class="text">Тут будет удобно представить MAC адрес как функцию от его IP. 
+					Вот так, например – "у хоста с IP=IPA, его MAC = MAC(IPA)". Это чисто для удобства записи.</p>
+					<p class="text">Из схемы выше сразу видно, как мы заполняем поля этой, важной для нас, структуры. 
+					Функция <span class="warning">InitARP()</span>, в нашем случае, использует весь арсенал всех этих вспомогательных 
+					функций – <span class="warning">GetLocalIP(), GetLocalMAC(), GetMAC() … </span>
+					В этом местеповествования можно поискать их в исходнике и бегло ознакомиться. </p>
+					
+					<p class="text">Структура заполнена, теперь двукратный вызов функции <span class="warning">StaticARP().</span></p>
+					<p class="text">Демонстрационный пример результата работы этой функции можно посмотреть:<br>
+					<a href="sources/__sheva740/miracle/02/files/StaticARP/StaticARP.asm" target="_blank">"sources/__sheva740/miracle/02/files/StaticARP/StaticARP.asm"</a></p>
+					
+					
+					<p class="warning"><br>
+					Первый вызов	- 	StaticARP(IPA, MAC(IPA));<br>
+					Второй вызов	- 	StaticARP(IPB, MAC(IPB));</p>
+					
+
+					<p class="text">Результатом выполнения этих двух вызовов будет установка соответствий в локальных <span class="warning">arp-таблицах</span>, 
+					которые можно посмотреть по команде <span class="warning">"arp -a":</span></p>
+					
+					<p class="pic1"><img src="pic/mir_pic14.png" alt="arp -a"></p>
+					
+					<p class="text">В своей локальной arp – таблице соответствий мы установили соответствие IP-MAC для двух машин. 
+					Это правильное соответствие, то есть для IP указанны истинные  их MAC-ки. </p>
+					<p class="warning">Для подвоха крайне важно знать истинное расположение дел.</p>
+					
+					<p class="text">Итак, мы готовы для проведения атаки типа <span class="warning">ARP-spoofing.</span><br>
+					Да, и еще, пока мы не начали! Выпишем на всех трех машинах все их настоящие MAC адреса. Это легко сделать, используя утилиту: <br>
+					<a href="sources/__sheva740/miracle/02/files/gETlOCALmac/getLocMAC.asm" target="_blank">"sources/__sheva740/miracle/02/files/gETlOCALmac/getLocMAC.asm"</a>:</p>
+					
+					
+					<p class="pic1"><img src="pic/mir_pic15.png" alt="getLocMAC (1)"></p>
+					<p class="pic1"><img src="pic/mir_pic16.png" alt="getLocMAC (2)"></p>
+					<p class="pic1"><img src="pic/mir_pic17.png" alt="getLocMAC (3)"></p>
+					
+					<p class="text">Обойдем все машины и позапускаем ее. Если вы этого не можете сделать в  
+					виду каких-то причин (например, вам лень), воспользуйтесь утилитой:<br>
+					<a href="sources/__sheva740/miracle/02/files/sendARP/sendARP.asm" target="_blank">"sources/__sheva740/miracle/02/files/sendARP/sendARP.asm"</a>:</p>
+					
+					<p class="pic1"><img src="pic/mir_pic18.png" alt="sendARP"></p>
+					
+					<p class="text">Кажется, с этой все. Перейдем к следующей функции.</p><br>
+					
+					<h3><span class="warning">Функция   StartARPSpoof ().   </span></h3>
+					<p class="text">Начинаем наши безобразия. )))<br>
+					Целью этой функции будет запуск двух потоков. В них, в бесконечном цикле, отсылаются <span class="warning">ARP-ответы</span>, подменяющие в 
+					arp-таблицах обоих машин соответствие IP-MAC на те которые нам нужны.<br>
+					Поток <span class="warning">SpoofThread()</span> выполняет следующее:</p>
+					<ul>
+					<li>Отправит ARP -  пакет.</li>
+					<li>Выполнит <span class="warning">StaticARP()</span> – для сохранения истинных соответствий IP-MAC на атакующей машине.</li>
+					</ul>
+					
+					<p class="warning">Давайте по подробней. <br>
+					Поток "А" – в нем убедим машину IPB в том , что <br>
+					MAC(IPA) = MAC(IPAttack)<br>
+					Поток "B" – в нем убедим машину IPA в том , что <br>
+					MAC(IPB) = MAC(IPAttack)</p>
+					<p class="text">Как выполнить эту задачу? Для начала напомним себе структуру ARP – пакета ответа:</p>
+					<p class="pic1"><img src="pic/mir_pic19.png" alt="arp package"></p>
+					<p class="text">Итак, нам нужно сформировать в потоках "А" и "B" - ARP ответы такого содержания:</p>
+					<p class="pic1"><img src="pic/mir_pic20.png" alt="arp A"></p>
+					<p class="pic1"><img src="pic/mir_pic21.png" alt="arp B"></p>
+					
+					<p class="text">Каждый из потоков отошлет этот пакет с помощью функции <span class="warning">SendingARP()</span>. 
+					Также, в каждом потоке выполнится функция <span class="warning">StaticARP()</span> для сохранения актуальной локальной arp-таблицы.<br>
+					После запуска обоих потоков перейдем, поочередно, на машины <span class="warning">IPA и IPB</span> и посмотрим, что там изменилось. <br>
+					Машина с <span class="warning">IPA:</span></p>
+					
+					<p class="pic1"><img src="pic/mir_pic22.png" alt="machine with IPA"></p>
+					<p class="text">Машина с <span class="warning">IPB:</span></p>
+					<p class="pic1"><img src="pic/mir_pic23.png" alt="machine with IPB"></p>
+					
+					<p class="text">Изобразим теперь работу наших процессов в виде такой симпатичной схемы. Все для лучшего понимания. )))</p>
+					<p class="pic1"><img src="pic/mir_pic24.png" alt="working of processes"></p>
+					
+					<p class="text">Так вот теперь к главному. Что же случится, если мы захотим все же выполнить программу на данном этапе разработки? 
+					Что будет, если мы наберем в ком. строке</p>
+					
+<PRE>
+ c:\... \files\arpspoof_sub1\src>arpspoof_sub1.exe -i 1 -s 192.168.1.2 192.168.1.3 
+</PRE>
+					
+					<p class="text">…и нажмем Enter? Допустим, мы так и сделали. Что мы увидим? </p>
+					<p class="pic1"><img src="pic/mir_pic25.png" alt="enter enter =)"></p>
+					
+					<p class="text">На машине атакующего запустили программу и пересели на IPA. И видим:</p>
+					<p class="pic1"><img src="pic/mir_pic26.png" alt="go IPA"></p>
+					
+					<p class="text"><span class="warning">Пинг прекратился! Ура!! Для понимания еще раз посмотрим на схему выше. Раньше, до нашего вмешательства IPA передавала ICMP пакеты на 
+					IPB без посредников, а IPB передавало ответы в сторону IPA без посредников.</span>  
+					После запуска нашей программы IPA думает, что у машины IPB его MAC = MAC (IPAttack). И соответственно шлет свои пакеты ему.  
+					Но что же наш <span class="warning">IPAttack</span>? Он действительно получает эти пакеты от IPA? Но отвечать ему на них его никто не учил, 
+					потому, сидя на IPA, мы, пуская пинг на IPB, видим как бы обрыв сети. ))) </p>
+					<p class="pic1"><img src="pic/mir_pic27.png" alt="network down"></p>
+					
+					<p class="text">Вот так, сидя в одной локалке, можно “напакостить” соседу. Но что произойдет, если мы прекратим работу программы 
+					arpspoof_sub1.exe на машине IPAttack? Пойдут ли пинги с IPA на IPB как раньше? 
+					Ответ – пойдут, но лучше перезагрузиться , чтобы обнулить ложную информацию в локальных arp-таблицах машин IPA и IPB. 
+					Вот почему полезно было не запускать программу поспешно на данном этапе разработки, о чем мы  и предупреждали заранее. 
+					Ну не будем расстраиваться, в следующем шаге мы устраним это неудобство. А пока, не рискуя вас переутомить, раскланяюсь. )))<br>
+					До свиданья.</p><br>
+					
+					<p class="warning"><a href="mircle_1.html"><<< Часть 1</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="mircle_3.html">Часть 3 >>></a></p><br> 
+					
+					<p class="warning">Исходники: <a href="sources/__sheva740/miracle/02/files" target="_blank">sources/__sheva740/miracle/02/files</a></p>
+
+<p class="warning"><br>______________________________<br>
+__sheva740<br> 
+2012<br><br>
+Inception E-Zine</p>
+
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

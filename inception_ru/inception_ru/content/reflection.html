@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<title> Рефлексия: решение "нетрадиционных" задач </title>
+	</head>
+
+	<body>
+	<table cellpadding="25" align="center" >
+			<tr>
+				<td>
+					<h2><span class="header">Рефлексия: решение "нетрадиционных" задач</span></h2>
+					<br>
+					<p class="text">Я не буду слишком сильно все разжевывать, т.к. сама <span class="warning">идея рефлексии</span> не имеет ничего хитрого, просто об этом 
+механизме часто забывают. Человек, писавший что-то сложнее копипаста примеров, должен догадаться 
+моментально по паре объяснений и примеров.</p>
+					<p class="text"><span class="warning">Рефлексия</span> - это, говоря простыми словами, способ обращаться программе к собственному коду.
+Само понятие рефлексии в программировании сейчас используется в контексте <span class="warning">"управляемого кода"</span> -
+кода, который выполняется в интерпретаторе, а не напрямую, как в компилируемых языках.</p>
+					<p class="text">Рефлексией пользуются относительно не часто, но такой способ проектирования имеет большие преимущества по сравнению
+со стандартными паттернами проектирования. Рефлексия позволяет делать код крайне модульным без перекомпиляции, 
+что имеет отдельное значение в "управляемом коде", в котором нету возможности (как в C/C++/ASM и т.д.) 
+получить прямой доступ к любому месту в памяти и переписать.</p>
+					<p class="text">Типичное использование рефлексии - это загрузка нужного класса или метода, исходя из поступающих данных, 
+чтобы при добавлении нового функционала не надо было дописывать новые условия в if или switch.</p>
+					<p class="text">Несколько простых примеров использования такого подхода на JAVA и PHP.<br><br>
+					------ PHP ------</p>
+				
+
+				
+<pre class="php" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #000000; font-weight: bold;">&lt;?</span>   
+<span style="color: #000088;">$processor</span> <span style="color: #339933;">=</span> <span style="color: #000000; font-weight: bold;">new</span> RequestProcessor<span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #000088;">$funcname</span> <span style="color: #339933;">=</span> RequestProcessor<span style="color: #339933;">::</span><span style="color: #004000;">FUNC_PREFIX</span><span style="color: #339933;">.</span><span style="color: #000088;">$_GET</span><span style="color: #009900;">&#91;</span><span style="color: #0000ff;">'action'</span><span style="color: #009900;">&#93;</span><span style="color: #339933;">;</span>
+<span style="color: #b1b100;">if</span><span style="color: #009900;">&#40;</span><span style="color: #990000;">method_exists</span><span style="color: #009900;">&#40;</span><span style="color: #000088;">$processor</span><span style="color: #339933;">,</span> <span style="color: #000088;">$funcname</span><span style="color: #009900;">&#41;</span><span style="color: #009900;">&#41;</span> <span style="color: #009900;">&#123;</span>
+<span style="color: #b1b100;">echo</span> <span style="color: #000088;">$processor</span><span style="color: #339933;">-&gt;</span><span style="color: #000088;">$funcname</span><span style="color: #009900;">&#40;</span><span style="color: #000088;">$xpath</span><span style="color: #339933;">,</span> <span style="color: #000088;">$name</span><span style="color: #009900;">&#91;</span><span style="color: #cc66cc;">0</span><span style="color: #009900;">&#93;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #009900;">&#125;</span>
+<span style="color: #666666; font-style: italic;">// в PHP подгружать классы динамически можно через встроенные механизмы:</span>
+<span style="color: #666666; font-style: italic;">// http://php.net/manual/en/language.oop5.autoload.php</span>
+<span style="color: #000000; font-weight: bold;">?&gt;</span></pre>
+
+
+
+					<p class="text"><br>
+					------ JAVA ------</p>
+					
+					
+					
+<pre class="java" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #000000; font-weight: bold;">Class</span> clazz <span style="color: #339933;">=</span> <span style="color: #000066; font-weight: bold;">null</span><span style="color: #339933;">;</span>
+<span style="color: #000000; font-weight: bold;">try</span> <span style="color: #009900;">&#123;</span>
+clazz <span style="color: #339933;">=</span> <span style="color: #000000; font-weight: bold;">Class</span>.<span style="color: #006633;">forName</span><span style="color: #009900;">&#40;</span><span style="color: #0000ff;">&quot;some.package.TheActionsClass&quot;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #003399;">Object</span> obj <span style="color: #339933;">=</span> clazz.<span style="color: #006633;">newInstance</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #003399;">Method</span> actionMethod <span style="color: #339933;">=</span> clazz.<span style="color: #006633;">getDeclaredMethod</span><span style="color: #009900;">&#40;</span>anAction<span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #003399;">String</span> result <span style="color: #339933;">=</span> <span style="color: #009900;">&#40;</span><span style="color: #003399;">String</span><span style="color: #009900;">&#41;</span> actionMethod.<span style="color: #006633;">invoke</span><span style="color: #009900;">&#40;</span>obj<span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #003399;">System</span>.<span style="color: #006633;">out</span>.<span style="color: #006633;">println</span><span style="color: #009900;">&#40;</span><span style="color: #0000ff;">&quot;result: &quot;</span><span style="color: #339933;">+</span>result<span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #009900;">&#125;</span> <span style="color: #000000; font-weight: bold;">catch</span> <span style="color: #009900;">&#40;</span>
+<span style="color: #003399;">ClassNotFoundException</span> <span style="color: #339933;">|</span> <span style="color: #003399;">InstantiationException</span> <span style="color: #339933;">|</span>
+<span style="color: #003399;">IllegalAccessException</span> <span style="color: #339933;">|</span> <span style="color: #003399;">NoSuchMethodException</span> <span style="color: #339933;">|</span>
+<span style="color: #003399;">InvocationTargetException</span> e<span style="color: #009900;">&#41;</span>
+<span style="color: #009900;">&#123;</span>
+e.<span style="color: #006633;">printStackTrace</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #009900;">&#125;</span>
+<span style="color: #666666; font-style: italic;">// в JAVA загружаемые классы должны входить в classpath при старте приложения</span></pre>					
+					
+
+
+					<p class="text">Нельзя говорить о рефлексии в Java, не упомянув об аннотациях.<br>
+					В Java существует такой механизм как <span class="warning">аннотации (java annotations)</span>, позволяющий параметризировать код отдельно от его содержания. 
+На этом построены многие технологии (<span class="warning">JPA</span>, например), значительно упрощающие разработку.<br>
+Аннотация может быть поставлена к классу, полю и методу и существует для того, чтобы ставить собственные описания к коду и 
+использовать его любым удобным способом без дополнительных конструкций.<br>
+Простой пример:<br>
+добавляем к любому методу в коде аннотацию <span class="warning">@OnTimeTick</span>, далее с помошью механизмов рефлексии можно получить все такие методы и, 
+соответственно, вызывать их по срабатыванию некоторого таймера.</p>
+
+					<p class="text"><br>
+					------ JAVA ------</p>
+					
+					
+					
+<pre class="java" style="font-family:monospace; font-size: 80%; background: #e8e8e8;">clazz <span style="color: #339933;">=</span> <span style="color: #000000; font-weight: bold;">Class</span>.<span style="color: #006633;">forName</span><span style="color: #009900;">&#40;</span><span style="color: #0000ff;">&quot;some.package.SomeExampleClass&quot;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+<span style="color: #000000; font-weight: bold;">for</span> <span style="color: #009900;">&#40;</span><span style="color: #003399;">Method</span> method <span style="color: #339933;">:</span> clazz.<span style="color: #006633;">getDeclaredMethods</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span><span style="color: #009900;">&#41;</span> <span style="color: #009900;">&#123;</span>
+    <span style="color: #000000; font-weight: bold;">if</span> <span style="color: #009900;">&#40;</span>method.<span style="color: #006633;">getAnnotation</span><span style="color: #009900;">&#40;</span>OnTimerTick.<span style="color: #000000; font-weight: bold;">class</span><span style="color: #009900;">&#41;</span> <span style="color: #339933;">!=</span> <span style="color: #000066; font-weight: bold;">null</span><span style="color: #009900;">&#41;</span> <span style="color: #009900;">&#123;</span>
+        method.<span style="color: #006633;">invoke</span><span style="color: #009900;">&#40;</span><span style="color: #000000; font-weight: bold;">this</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
+    <span style="color: #009900;">&#125;</span>
+<span style="color: #009900;">&#125;</span></pre>
+
+
+
+					<p class="text">Далее: как можно этот механизм использовать для <span class="warning">"нетрадиционных" задач</span>.<br>
+					Java обладает одним свойством, которое иногда очень сильно раздражает разработчиков - она легко декомпилируется. Чаще всего от этого спасаются 
+					обфускацией кода, что не решает основную задачу - декомпиляцию, но делает анализ кода демотивирующи сложным, но все же посильным в разумные сроки.</p>
+					<p class="text">Сама структура организации скомпилированного кода (байт-кода) достаточно проста и уже сама по себе может дать какую-то информацию 
+о приложении без декомпиляции - будь то jar (zip папки, по сути) или просто файлы классов. 
+Более того, даже код, прошедший обфускацию, содержит в скомпилированном виде паттерны, 
+которые могут быть использованы, например, антивирусами.</p>
+					<p class="text">Чем тут может помочь рефлексия? Рефлексия в java позволяет создавать <span class="warning">собственный загрузчик классов</span>, 
+где на входе мы получаем бинарный поток данных, а на выходе должны предоставить экземпляр искомого класса. 
+Таким образом, собственно, байт-код может быть закриптован любым способом, на который только хватит фантазии.</p>
+					<p class="text"><a href="sources/KostaPC/reflection/java_reflection_encoder" target="_blank">В данной папке</a> приведен самый простой вариант такого загрузчика. 
+					Код состоит из 2-х частей:</p> 
+					<ul>
+						<li><span class="warning">криптограф</span> - класс, который шифрует байт-код и упаковывает в файл дополнительную информацию, 
+						необходимую для загрузки класса.</li>
+						<li><span class="warning">загрузчик</span> - класс, который загружает закриптованный файл, расшифровывает и запускает метод <span class="warning">main()</span>. 
+						Таким образом, зашифрованный класс будет запускаться точно также, как и без шифрования.</li>
+					</ul>
+					<p class="text">В качестве шифрования сугубо для примера используется <span class="warning">BASE64</span>. Такая пара криптограф-загрузчик позволяет зашифровать 
+					и загружать любой скомпилированный класс-файл. Несложная доработка позволит, таким образом, паковать в единый файл целую структуру классов.</p>
+					<p class="text">Где это может быть полезно?<br>
+При пересылке кода по открытым сетям, например, если этот код является догружаемым функционалом бота и 
+должен быть размещен на открытых ресурсах, на <span class="warning">pastebin</span>, например. <br><br></p>
+
+<p class="warning">Исходники: <a href="sources/KostaPC/reflection/java_reflection_encoder" target="_blank">sources/KostaPC/reflection/java_reflection_encoder</a></p>
+
+<p class="warning"><br>______________________________<br>
+KostaPC<br>
+2013<br><br>
+Inception E-Zine</p>
+
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

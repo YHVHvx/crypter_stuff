@@ -1,0 +1,602 @@
+moulte_layers()
+{
+10:
+  {
+    #Ajoute un layer
+    decrypteur(label0,((label1-label0)>>2)+1,rndint0);
+    label0;
+    moulte_layers();
+    label1;
+    encrypte(label0,((label1-label0)>>2)+1,rndint0);
+    
+    //Incrémente le compteur de layers
+    RAW (0) ASM {
+        inc nb_layers
+    }
+  }
+0:DEFAUT
+  {
+    #Genere le decrypteur de la MB
+    decrypteur($(offset code_messagebox),$(taille_code_messagebox),$(cle));
+
+    /*jmp sur la messagebox (car on decrypte sur un alignement de 4 octets
+    du coup les derniers 2-3octets du dernier decrypteur risquent 
+    d'être faux car pas alignés sur 4 octets) */
+    write8(0xe9);
+    write32($(offset code_messagebox)-label0);
+    label0;
+
+  }
+}
+
+decrypteur(debut:entier,taille_sur_4:entier,cle:entier)
+{
+1:
+ {
+   mov_reg_cst(freereg0,debut);
+   junk();
+   mov_reg_cst(freereg1,taille_sur_4);
+   label0;
+   mov_reg_regi(freereg2,freereg0);
+   junk();
+   sub_reg_cst(freereg2,cle);
+   junk();
+   mov_regi_reg(freereg0,freereg2);
+   add_reg_cst(freereg0,4);
+   junk();
+   sub_reg_cst(freereg1,1);
+   junk();
+   saut_nz(freereg1,label0);
+ }
+0:DEFAUT
+ {
+   push_reg(rndreg0);
+   junk();
+   push_reg(rndreg1);
+   junk();
+   push_reg(rndreg2);
+   mov_reg_cst(rndreg0,debut);
+   mov_reg_cst(rndreg1,taille_sur_4);
+   label0;
+   mov_reg_regi(rndreg2,rndreg0);
+   junk();
+   sub_reg_cst(rndreg2,cle);
+   junk();
+   mov_regi_reg(rndreg0,rndreg2);
+   add_reg_cst(rndreg0,4);
+   junk();
+   sub_reg_cst(rndreg1,1);
+   junk();
+   saut_nz(rndreg1,label0);
+   pop_reg(rndreg2);
+   junk();
+   pop_reg(rndreg1);
+   junk();
+   pop_reg(rndreg0);
+ }
+}
+
+
+
+encrypte(debut:entier,taille_sur_4:entier,cle:entier)
+{
+   RAW(0) ASM {
+     pusha
+     mov edi,debut
+     mov ecx,taille_sur_4
+.1:  mov eax,[edi]
+     add eax,cle
+     stosd
+     loop .1
+     popa
+  }
+}
+
+#==========================================================
+
+
+cmp_reg_zero(reg:registre)
+{
+1:
+  {
+    raz_registre(freereg0);
+    cmp_reg_reg(freereg0,reg);
+  }
+1:
+  {
+    raz_registre(freereg0);
+    cmp_reg_reg(reg,freereg0);
+  }
+3: DEFAUT
+ {
+  if(reg!=EBP)
+  {
+    write16(0xF883 | reg << 8);
+    write8(0);
+   }
+   else
+   {
+     write16(0xFD83);
+     write8(0);
+   }
+ }
+}
+
+cmp_reg_reg(reg1:registre,reg2:registre)
+{
+ 1: DEFAUT
+ {
+   write16(0xC03B | reg1 <<11 | reg2 <<8);
+ }
+}
+
+saut_nz(reg:registre,location:adresse)
+{
+3 : DEFAUT
+ {
+  junk();
+  cmp_reg_zero(reg);
+  saut_nz2(location);
+ }
+}
+
+
+saut_nz2(location:adresse)
+{
+
+1: DEFAUT
+ {
+   label0;
+   /* Peut-on faire directement un jnz short ? */
+   if(((location-label0-2) < 127) && (location-label0-2 > 0-128))
+   {
+     write8(0x75);
+     write8(location-label0-2);
+   }
+   /* sinon on fait un jz qui saute au dessus d'un jmp */
+   else
+   {
+     write8(0x74);
+     write8(5);
+     write8(0xE9);
+     write32(location-label0-(5+2));
+   }
+ }
+}
+
+raz_registre(reg:registre)
+{
+1:
+  {
+    junk();
+    mov_reg_cst(reg,0);
+  }
+1:
+  {
+    junk();
+    raz_registre(freereg0);
+    mov_reg_reg(reg,freereg0);
+  }
+2:
+  {
+   write16(0xC033 | reg << 11 | reg << 8) ;   # xor reg,reg
+  }
+
+1: DEFAUT
+  {
+    write16(0xC02B | reg << 11 | reg << 8);   # sub reg,reg
+  }
+}
+mov_reg_cst(reg:registre,cst:entier)
+{
+6:
+  {
+    mov_reg_cst(reg,cst-[freemem0]);
+    junk();
+    add_reg_mem(reg,freemem0);
+  }
+6:
+  {
+    mov_reg_cst(reg,[freemem0]+cst);
+    junk();
+    sub_reg_mem(reg,freemem0);
+  }
+6:
+  {
+     mov_reg_cst(reg,rndint0);
+     junk();
+     add_reg_cst(reg,cst-rndint0);
+  }
+6:
+  {
+     mov_reg_cst(reg,rndint0);
+     junk();
+     sub_reg_cst(reg,rndint0-cst);
+  }
+
+32: DEFAUT
+  {
+    write8(0xB8|reg);
+    write32(cst);
+  }
+}
+
+mov_mem_cst(adr:adresse,constante:entier)
+{
+2:
+{
+     mov_reg_cst(freereg0,constante);
+     mov_mem_reg(adr,freereg0);
+}
+4:DEFAUT
+ {
+    junk();
+    write16(0x05C7);
+    write32(adr);
+    write32(constante);
+ }
+}
+
+mov_reg_regi(regdst:registre,regsrc:registre)
+{
+3:
+ {
+
+    mov_reg_regi(regdst,regsrc);
+    junk();
+    add_reg_cst(regdst,rndint0);
+    junk();
+    sub_reg_cst(regdst,rndint0);
+ }
+6: DEFAUT
+ {
+    if(regsrc!=EBP)
+    {
+       write16(0x008B | regsrc<<8 | regdst<<11);
+     }
+    else
+    {
+       write8(0x8B);
+       write8(0x45 | regdst<<3);
+       write8(0x00);
+    }
+ }
+}
+
+mov_regi_reg(regdst:registre,regsrc:registre)
+{
+ 2:
+ {
+
+    mov_regi_reg(regdst,regsrc);
+    junk();
+    add_reg_cst(regdst,rndint0);
+    junk();
+    sub_reg_cst(regdst,rndint0);
+ }
+
+3: DEFAUT
+ {
+    if(regdst!=EBP)
+    {
+       write16(0x0089 | regdst<<8 | regsrc<<11);
+    }
+    else
+    {
+       write8(0x89);
+       write8(0x45 | regsrc<<3);
+       write8(0x00);
+    }
+ }
+}
+
+mov_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+ {
+   write16(0xC08B | regsrc <<8 | regdest<<11);
+ }
+}
+
+
+mov_reg_mem(reg:registre,adr:adresse)
+{
+
+1:
+{
+  mov_reg_cst(freereg0,adr);
+  mov_reg_regi(reg,freereg0);
+}
+1: DEFAUT
+ {
+  if(reg==EAX)
+  {
+    write8(0xA1);
+  }
+  else
+  {
+    write16(0x058B | reg <<11);
+  }
+  write32(adr);
+ }
+}
+
+mov_mem_reg(mem:adresse,reg:registre)
+{
+1:
+{
+  mov_reg_cst(freereg0,mem);
+  mov_regi_reg(freereg0,reg);
+
+}
+2:DEFAUT
+ {
+   if(reg==EAX)
+   {
+     write8(0xA3);
+     write32(mem);
+   }
+   else
+   {
+      write16(0x0589 | reg << 11);
+      write32(mem);
+   }
+ }
+}
+
+add_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    junk();
+    write16(0xC003 | regdest<<11 | regsrc<<8);
+  }
+}
+
+add_reg_mem(reg:registre,adr:adresse)
+{
+3:
+  {
+    mov_reg_mem(freereg0,adr);
+    junk();
+    add_reg_reg(reg,freereg0);
+  }
+12: DEFAUT
+  {
+    junk();
+    write16(0x0503 | (reg << 11));
+    write32(adr);
+  }
+}
+
+add_reg_cst(reg:registre,cst:entier)
+{
+2:
+  {
+    mov_reg_cst(freereg0,cst);
+    junk();
+    add_reg_reg(reg,freereg0);
+  }
+1:
+   {
+     push_reg(rndreg0);
+     mov_reg_cst(rndreg0,cst);
+     junk();
+     add_reg_reg(reg,rndreg0);
+     pop_reg(rndreg0);
+   }
+4: DEFAUT
+  {
+    junk();
+    if(reg==EAX)
+    {
+      write8(0x05);
+    }
+    else
+    {
+      write16(0xC081 | (reg << 8));
+    }
+    write32(cst);
+  }
+}
+
+
+sub_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    write16(0xC02B | regdest << 11 | regsrc << 8);
+  }
+}
+
+sub_reg_mem(reg:registre,adr:adresse)
+{
+3:
+ {
+    mov_reg_mem(freereg0,adr);
+    junk();
+    sub_reg_reg(reg,freereg0);
+  }
+3: DEFAUT
+  {
+    write16(0x052B | reg<<11);
+    write32(adr);
+  }
+}
+
+sub_reg_cst(reg:registre,cst:entier)
+{
+2:
+  {
+    mov_reg_cst(freereg0,cst);
+    junk();
+    sub_reg_reg(reg,freereg0);
+  }
+1:
+   {
+     push_reg(rndreg0);
+     mov_reg_cst(rndreg0,cst);
+     junk();
+     sub_reg_reg(reg,rndreg0);
+     pop_reg(rndreg0);
+   }
+2: DEFAUT
+  {
+    junk();
+    if(reg==EAX)
+    {
+      write8(0x2D);
+    }
+    else
+    {
+      write16(0xE881 | reg<<8);
+    }
+    write32(cst);
+  }
+}
+
+push_cst(cst:entier)
+{
+3:
+  {
+    mov_reg_cst(freereg0,cst);
+    junk();
+    push_reg(freereg0);
+  }
+
+3: DEFAUT
+  {
+    write8(0x68);
+    write32(cst);
+  }
+}
+
+
+push_reg(reg:registre)
+{
+1: DEFAUT
+  {
+    write8(0x50 | reg);
+  }
+}
+
+pop_reg(reg:registre)
+{
+1: DEFAUT
+  {
+    write8(0x58|reg);
+  }
+}
+
+junk()
+{
+2:
+{
+  junk_non_vide();
+}
+2:
+{
+  junk_reg(freereg0);
+}
+2:
+{
+  push_reg(rndreg0);
+  junk_reg(rndreg0);
+  pop_reg(rndreg0);
+}
+3:{
+  mov_mem_reg(freemem0,freereg0);
+  junk_reg(freereg0);
+  mov_reg_mem(freereg0,freemem0);
+  mov_mem_cst(freemem0,[freemem0]);
+}
+2:
+{
+  junk_mem(freemem0);
+}
+22: DEFAUT
+ {
+
+ }
+}
+
+junk_reg(reg:registre)
+{
+ 4:
+ {
+      junk();
+      mov_reg_cst(reg,rndint0);
+ }
+ 4:
+ {
+      junk();
+      add_reg_cst(reg,rndint0);
+ }
+ 4:
+ {
+      junk();
+      mov_mem_reg(freemem0,reg);
+      mov_mem_cst(freemem0,[freemem0]);
+ }
+ 4: DEFAUT
+ {
+      junk();
+      sub_reg_cst(reg,rndint0);
+ }
+}
+
+junk_mem(mem:adresse)
+{
+ 4:
+ {
+    mov_reg_mem(freereg0,mem);
+ }
+  6: DEFAUT
+ {
+ }
+}
+
+junk_mem_reg(mem:adresse,reg:registre)
+{
+ 4: DEFAUT
+ {
+ }
+}
+junk_non_vide()
+{
+1:
+ {
+    mov_reg_mem(freereg0,freemem0);
+    junk();
+ }
+3:
+ {
+      mov_reg_cst(freereg0,rndint0>>28+10);
+      label0;
+      junk_non_vide();
+      junk();
+      junk();
+      junk();
+      junk();
+      junk();
+      junk();
+      junk();
+      sub_reg_cst(freereg0,1);
+      saut_nz(freereg0,label0);
+ }
+ 1:
+ {
+      push_cst(rndint0);
+      junk_non_vide();
+      junk();
+      junk();
+      pop_reg(freereg0);
+ }
+ 1:  DEFAUT
+ {
+  push_reg(rndreg0);
+  junk_reg(rndreg0);
+  junk_reg(rndreg0);
+  pop_reg(rndreg0);
+  }
+ }

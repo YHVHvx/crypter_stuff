@@ -1,0 +1,58 @@
+mov_reg_cst(reg:registre,cst:entier)
+{
+
+16:
+  {
+    mov_reg_cst(reg,cst-[freemem0]);
+    add_reg_mem(reg,freemem0);
+  }
+16:
+  {
+    mov_reg_cst(reg,[freemem0]+cst);
+    sub_reg_mem(reg,freemem0);
+  }
+0: DEFAUT
+  {
+    write8(0xB8|reg);
+    write32(cst);
+  }
+}
+
+
+
+add_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    write16(0xC003 | regdest<<11 | regsrc<<8);
+  }
+}
+
+add_reg_mem(reg:registre,adr:adresse)
+{
+1: DEFAUT
+  {
+    write16(0x0503 | (reg << 11));
+    write32(adr);
+  }
+}
+
+
+sub_reg_reg(regdest:registre,regsrc:registre)
+{
+1: DEFAUT
+  {
+    write16(0xC02B | regdest << 11 | regsrc << 8);
+  }
+}
+
+sub_reg_mem(reg:registre,adr:adresse)
+{
+
+1: DEFAUT
+  {
+    write16(0x052B | reg<<11);
+    write32(adr);
+  }
+}
+

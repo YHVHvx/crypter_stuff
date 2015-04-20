@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Krypton", "Generator\peldr.vcxproj", "{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E89226CD-1AC4-CBD8-546A-4374321C957E} = {E89226CD-1AC4-CBD8-546A-4374321C957E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StubNew", "StubNew\StubNew.vcxproj", "{96A3E529-5588-496C-AB15-EEFFFC70199C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E89226CD-1AC4-CBD8-546A-4374321C957E} = {E89226CD-1AC4-CBD8-546A-4374321C957E}
+		{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C} = {5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scomp", "Scomp\Scomp.vcxproj", "{E89226CD-1AC4-CBD8-546A-4374321C957E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}.Debug|Win32.ActiveCfg = Release|Win32
+		{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}.Debug|Win32.Build.0 = Release|Win32
+		{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}.Release|Win32.ActiveCfg = Release|Win32
+		{5F4D5A9F-50D3-4FF5-B2BF-01F31A2F229C}.Release|Win32.Build.0 = Release|Win32
+		{96A3E529-5588-496C-AB15-EEFFFC70199C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{96A3E529-5588-496C-AB15-EEFFFC70199C}.Debug|Win32.Build.0 = Debug|Win32
+		{96A3E529-5588-496C-AB15-EEFFFC70199C}.Release|Win32.ActiveCfg = Release|Win32
+		{96A3E529-5588-496C-AB15-EEFFFC70199C}.Release|Win32.Build.0 = Release|Win32
+		{E89226CD-1AC4-CBD8-546A-4374321C957E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E89226CD-1AC4-CBD8-546A-4374321C957E}.Debug|Win32.Build.0 = Debug|Win32
+		{E89226CD-1AC4-CBD8-546A-4374321C957E}.Release|Win32.ActiveCfg = Release|Win32
+		{E89226CD-1AC4-CBD8-546A-4374321C957E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MercurialSourceControlSolutionProperties) = preSolution
+		SolutionIsControlled = True
+		SolutionBindings = <Solution Location In Database>
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<title> Imported Code </title>
+	</head>
+
+	<body>
+	<table cellpadding="25" align="center" >
+			<tr>
+				<td>
+					<h2><span class="header">Imported Code</span></h2>
+					<br>
+					<h3><span class="warning">Что такое код импорта?</span></h3>
+					<p class="text"><span class="warning">Сегодня 5 лет с тех пор, как я придумал эту технику, и вот, наконец, я завершаю ее реализацию.</span>.  
+					После написания <span class="warning">виртуального кода</span> я пытался найти иной способ заставить операционную систему построить для меня код.  
+					На этот раз, я использую таблицу импорта для получения всех значений. На это потребовалась определенная доля изобретательности.</p><br> 
+
+					<h3><span class="warning">Как это работает?</span></h3> 
+					<p class="text">Обычно, таблица импорта получает реальные адреса, значения которых угадать невозможно, но я сделал свою таблицу импорта таким образом, 
+					чтобы она импортировала адреса, также экспортируемые моим процессом, так что значения мне достоверно известны. 
+					Затем я могу создать один экспорт для каждого уникального байта и импортировать все необходимые мне байты. </p>
+
+					<p class="text">Конечно, недостаточно импортировать байты, потому что размеры импортов - 32 бита, так что нам необходим способ доступа к байтовому значению каждого из них. Мы можем этого достичь, используя небольшой декодер и сделав из импортов выполняемый код, выглядит это вот так: </p>
+
+
+
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>	 <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;f7 -&gt; import_loop (f7 - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    b8 nn xx xx and xx c3 xx xx
+</PRE>
+
+					<p class="text">а nn - это как раз то значение байта, которое нам нужно. <span class="warning">Impute.A и B</span> поддерживают эту форму.</p>
+					<p class="text">Мы можем расставить импорты произвольно, чтобы сделать её полиморфной. Мы также можем использовать другие регистры вместо eax.</p>
+
+
+
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> reg<span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;f6 -&gt; import_loop (f6 - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    bx nn xx xx and xx c3 xx xx
+</PRE>
+
+					<p class="text">кроме того, ecx, edx, ebp также доступны, а nn - значение байта, которое нам нужно. 
+					<span class="warning">Impute.A и B</span> также поддерживают эту форму.</p>
+
+					<p class="text">Мы можем поддержать ebx следующим образом:</p>
+					
+					
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ebx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ebx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;f5 -&gt; import_loop (f5 - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    bb nn xx xx and xx c3 xx xx
+</PRE>
+
+					<p class="text">а nn - значение байта, которое нам нужно. <span class="warning">Impute.A и B</span> также поддерживают эту форму.</p>
+					
+					<p class="text">Ещё один способ получить значения - использование ret nn.  Тогда дельта между старым и новым стеками будет являться значением байта. </p>
+
+
+
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">eax</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esp</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">sub</span>  <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;f3 -&gt; import_loop (f3 - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    c2 nn xx xx
+</PRE>
+					
+					<p class="text">а nn - значение байта, которое нам нужно. <span class="warning">Impute.C</span> поддерживает эту форму.</p>
+					
+					<p class="text">Мы даже можем их комбинировать, следующим образом:</p>
+					
+					
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">ecx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esp</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ecx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">sub</span>  <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;f0 -&gt; import_loop (f0 - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    b8 n1 xx xx and xx c2 n2 xx
+</PRE>
+
+					<p class="text">and n1 and n2 - значения байта, которые нам нужны. <span class="warning">Impute.D и E</span> поддерживают эту форму.</p>
+
+					<p class="text">Конечно, вместо eax мы также можем использовать другие регистры.</p>
+					
+					
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">eax</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esp</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">sub</span>  <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> reg<span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;ef -&gt; import_loop (ef - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    bx n2 xx xx and xx c2 n1 xx
+</PRE>
+
+					<p class="text">также доступны  ecx, edx, ebp, а n1 и n2 - значения байта, которые нам нужны, однако надо убедиться, что оба значения, предназначенные для хранения, записаны наоборот.  <span class="warning">Impute.D и E</span> также поддерживают эту форму.</p>
+
+					<p class="text">Мы можем поддержать ebx следующим образом:</p>
+					
+					
+					
+<pre class="asm" style="font-family:monospace; font-size: 80%; background: #e8e8e8;"><span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #339933;">,</span> offset import_list
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+import_loop<span style="color: #339933;">:</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ebx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">mov</span>  <span style="color: #46aa03; font-weight: bold;">ecx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">esp</span>
+    <span style="color: #00007f; font-weight: bold;">call</span> <span style="color: #46aa03; font-weight: bold;">esi</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ebx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">ecx</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">sub</span>  <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">xchg</span> <span style="color: #46aa03; font-weight: bold;">esp</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">eax</span>
+    <span style="color: #00007f; font-weight: bold;">stos</span> <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">edi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">lods</span> <span style="color: #0000ff; font-weight: bold;">dword</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span>
+    <span style="color: #00007f; font-weight: bold;">cmp</span>  <span style="color: #0000ff; font-weight: bold;">byte</span> ptr <span style="color: #009900; font-weight: bold;">&#91;</span><span style="color: #46aa03; font-weight: bold;">esi</span><span style="color: #009900; font-weight: bold;">&#93;</span><span style="color: #339933;">,</span> <span style="color: #46aa03; font-weight: bold;">bl</span>
+    <span style="color: #0000ff; font-weight: bold;">db</span>   <span style="color: #ff0000;">75h</span> <span style="color: #666666; font-style: italic;">;ee -&gt; import_loop (ee - первое импортированное значение)</span>
+import_list<span style="color: #339933;">:</span></pre>
+
+
+
+
+
+					<p class="text">Тогда все импорты приобретут формат:</p>
+					
+<PRE>
+    bb n1 xx xx and xx c2 n2 xx
+</PRE>
+
+					<p class="text">а n1 and n2 - значения байта, которые нам нужны. <span class="warning">Impute.D и E</span> также поддерживают эту форму.</p>
+					
+					<p class="text">Мы можем поддержать ASLR, заменив "mov esi" на "call $+5 / pop esi".</p>
+					
+					<p class="text">Если бы была 3-байтная инструкция, безопасная для исполнения в тот момент, когда мы контролируем первый байт, можно было бы поступить следующим образом: </p>
+					
+<PRE>
+    b8 nn xx xx and xx &#8249;inst&#8250; xx xx and aa &#8249;inst&#8250; xx xx [последовательность повторяется]
+</PRE>
+ 
+				<p class="text">Тогда мы могли бы построить целый код, используя только импорты, даже такие полиморфные регистры: </p>
+				
+<PRE>
+    bx nn xx xx and xx &#8249;inst&#8250; xx xx and 9x &#8249;inst&#8250; xx xx and aa &#8249;inst&#8250; xx xx [последовательность повторяется]
+</PRE>
+
+				<p class="text">К сожалению, в 32-битном коде такой инструкции нет, так что мы не сможем использовать таким образом полностью импортированный код. Однако, мы можем поступить следующим образом: </p>
+				
+<PRE>
+    b8 n5 xx xx and xx aa b8 n6 and xx xx xx aa [последовательность повторяется]
+</PRE>
+
+				<p class="text">Три импорта -  "mov eax, n5", "stosb" и "mov eax, n6",  а также
+"stosb".   Мы повторяем последние три импорта для всех наших байтов, а затем можем полностью декодировать. </p>
+				
+				<p class="text">Мы даже можем поступить с полиморфным регистром следующим образом: </p>
+				
+<PRE>
+    bx n5 xx xx and 9x aa bx n6 and xx xx xx 9x and aa bx n7 xx and xx xx xx aa [последовательность повторяется]
+</PRE>
+
+					<p class="text">Адрес буфера выглядит следующим образом:</p>
+					
+<PRE>
+    bf n1 n2 n3 and n4 90 90 90
+</PRE>
+
+					<p class="text">Адрес буфера - оффсет последнего импорта, так что по окончании декодирования, мы немедленно запускаем его.  
+					Для этого необходимо чуть больше памяти, но нам также не нужны никакие другие импорты, кроме этих. 
+<span class="warning">Impute.F</span> поддерживает форму b8.</p><br>
+
+					<h3><span class="warning">Import Forwarding</span></h3>
+					<p class="text">Это наша последняя проблема.  Некоторые DLL'ы могут экспортировать неприменяемую функцию, пересылая ссылку на другой DLL. 
+Обнаруживается она, если адрес импорта указывает внутрь таблицы экспорта. 
+Так как мы хотим подержать выдачу любого значения, нам необходимо избавиться от обнаружения пересылки импорта. 
+Для стационарных версий, это просто. Всё, что нам надо, это таблица экспорта с характеристиками, которые не пересекаются с нашим значением. 
+Impute делает это при помощи значения imagebase, которое пересекает границу в 4Gb, когда добавляется размер таблицы экспорта. 
+Тогда все наши значения либо меньше, чем imagebase, либо больше, чем конец таблицы экспорта. 
+Для ASLR эта проблема не решена. Если есть вероятность того, что Windows  загрузит файл на imagebase со значением 0x1xxx0000, 
+тогда может произойти обнаружение, и файл перестанет загружаться, но я такого никогда не видел. </p><br>
+
+					<h3><span class="warning">Приветствия дружелюбным людям (A-Z):</span></h3>
+					<p class="warning">Active - Benny - herm1t - hh86 - jqwerty - Malum - Obleak - pr0mix -
+Prototype - Ratter - Ronin - RT Fishel - sars - SPTH - The Gingerbread Man -
+Ultras - uNdErX - Vallez - Vecna - Whitehead</p><br>
+
+<p class="warning">Подбронее об авторе и Исходники: <a href="sources/rgb/impute" target="_blank">sources/rgb/impute</a></p>
+					
+
+<p class="warning"><br>______________________________<br>
+roy g biv / defjam<br> 
+rgb/defjam<br>
+iam_rgb@hotmail.com<br>
+2013<br><br>
+Inception E-Zine</p>
+
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

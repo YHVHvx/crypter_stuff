@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="BoundImportDirectory.cpp" />
+    <ClCompile Include="buffer\InputBuffer.cpp" />
+    <ClCompile Include="buffer\OutputBuffer.cpp" />
+    <ClCompile Include="ComHeaderDirectory.cpp" />
+    <ClCompile Include="DebugDirectory.cpp" />
+    <ClCompile Include="ExportDirectory.cpp" />
+    <ClCompile Include="IatDirectory.cpp" />
+    <ClCompile Include="MzHeader.cpp" />
+    <ClCompile Include="PeFile.cpp" />
+    <ClCompile Include="PeHeader.cpp" />
+    <ClCompile Include="PeLibAux.cpp" />
+    <ClCompile Include="RelocationsDirectory.cpp" />
+    <ClCompile Include="ResourceDirectory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BoundImportDirectory.h" />
+    <ClInclude Include="buffer\InputBuffer.h" />
+    <ClInclude Include="buffer\OutputBuffer.h" />
+    <ClInclude Include="ComHeaderDirectory.h" />
+    <ClInclude Include="DebugDirectory.h" />
+    <ClInclude Include="ExportDirectory.h" />
+    <ClInclude Include="IatDirectory.h" />
+    <ClInclude Include="ImportDirectory.h" />
+    <ClInclude Include="MzHeader.h" />
+    <ClInclude Include="PeFile.h" />
+    <ClInclude Include="PeHeader.h" />
+    <ClInclude Include="PeLib.h" />
+    <ClInclude Include="PeLibAux.h" />
+    <ClInclude Include="PeLibInc.h" />
+    <ClInclude Include="RelocationsDirectory.h" />
+    <ClInclude Include="ResourceDirectory.h" />
+    <ClInclude Include="TlsDirectory.h" />
+  </ItemGroup>
+</Project>

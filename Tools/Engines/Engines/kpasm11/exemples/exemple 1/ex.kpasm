@@ -1,0 +1,14 @@
+
+raz_registre(reg:registre)
+{
+
+2:
+  {
+   write16(0xC033 | reg << 11 | reg << 8) ;   # xor reg,reg
+  }
+  
+1: DEFAUT
+  {
+    write16(0xC02B | reg << 11 | reg << 8);   # sub reg,reg
+  }
+}
